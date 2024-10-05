@@ -48,12 +48,11 @@ export async function POST(req: Request) {
     });
   }
 
-  // Get Clerk client by invoking the function
-  const clerkClientInstance = clerkClient();
-
   // Process the event based on its type
   const { id } = evt.data;
   const eventType = evt.type;
+
+  const clerkClientInstance = clerkClient; // No parentheses
 
   if (eventType === "user.created") {
     const { id, email_addresses, image_url, first_name, last_name, username } =
@@ -61,7 +60,7 @@ export async function POST(req: Request) {
 
     const user = {
       clerkId: id,
-      email: email_addresses[0].email_address,
+      email: email_addresses?.[0]?.email_address ?? "", // Added null check
       username: username!,
       firstName: first_name ?? "",
       lastName: last_name ?? "",
@@ -102,5 +101,5 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: "OK", user: deletedUser });
   }
 
-  return new Response("", { status: 200 });
+  return new Response("Event not handled", { status: 400 });
 }
