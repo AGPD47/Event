@@ -5,7 +5,6 @@ import { createUser, deleteUser, updateUser } from "@/lib/actions/user.actions";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-  // You can find this in the Clerk Dashboard -> Webhooks -> choose the endpoint
   const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
 
   if (!WEBHOOK_SECRET) {
@@ -20,9 +19,8 @@ export async function POST(req: Request) {
   const svix_timestamp = headerPayload.get("svix-timestamp");
   const svix_signature = headerPayload.get("svix-signature");
 
-  // If there are no headers, error out
   if (!svix_id || !svix_timestamp || !svix_signature) {
-    return new Response("Error occured -- no svix headers", {
+    return new Response("Error occurred -- no svix headers", {
       status: 400,
     });
   }
@@ -45,13 +43,15 @@ export async function POST(req: Request) {
     }) as WebhookEvent;
   } catch (err) {
     console.error("Error verifying webhook:", err);
-    return new Response("Error occured", {
+    return new Response("Error occurred", {
       status: 400,
     });
   }
 
-  // Do something with the payload
-  // For this guide, you simply log the payload to the console
+  // Get Clerk client by invoking the function
+  const clerkClientInstance = clerkClient();
+
+  // Process the event based on its type
   const { id } = evt.data;
   const eventType = evt.type;
 
@@ -70,7 +70,7 @@ export async function POST(req: Request) {
 
     const newUser = await createUser(user);
     if (newUser) {
-      await clerkClient.users.updateUserMetadata(id, {
+      await clerkClientInstance.users.updateUserMetadata(id, {
         publicMetadata: {
           userId: newUser._id,
         },
@@ -78,6 +78,7 @@ export async function POST(req: Request) {
     }
     return NextResponse.json({ message: "Ok", user: newUser });
   }
+
   if (eventType === "user.updated") {
     const { id, image_url, first_name, last_name, username } = evt.data;
 
