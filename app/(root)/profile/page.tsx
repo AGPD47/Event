@@ -53,7 +53,7 @@ const ProfilePage = async () => {
       <section className="wrapper my-8">
         <Collection
           data={[organizedEvents?.data]}
-          emptyTitle="No evnets have been created yet"
+          emptyTitle="No events have been created yet"
           emptyStateSubtext="Go create some now"
           collectionType="Events_Organized"
           limit={3}
